@@ -32,8 +32,8 @@ func main() {
 	}
 	defer db.Close()
 
-	dbRepo := database.NewDbRepository(db)
-	merchantUsecase := merchant.NewMerchantUsecase(dbRepo, appConfig.AccessToken)
+	dbRepo := database.NewDbRepository(db, appConfig.Dbsecret)
+	merchantUsecase := merchant.NewMerchantUsecase(dbRepo)
 
 	serverHttp := server.NewServer(merchantUsecase)
 	var wg sync.WaitGroup

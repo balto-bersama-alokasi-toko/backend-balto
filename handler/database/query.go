@@ -67,7 +67,7 @@ var (
 		where
 		    m.kelurahan_id = $1
 		order by
-		    pgp_sym_decrypt(m.last_month_qr_total_nominal_transactions,'DUMMYSECRET')::INT desc
+		    pgp_sym_decrypt(m.last_month_qr_total_nominal_transactions,%s)::INT desc
 		LIMIT 3;
 `
 

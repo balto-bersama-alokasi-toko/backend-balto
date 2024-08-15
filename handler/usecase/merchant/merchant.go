@@ -3,16 +3,10 @@ package merchant
 import (
 	"backend-balto/handler/database"
 	"backend-balto/models"
-	"bytes"
-	"io"
-	"net/http"
-	"os/exec"
-	"strings"
-
-	"log"
+	"math/rand"
+	"time"
 
 	"encoding/json"
-
 	"strconv"
 )
 
@@ -28,8 +22,7 @@ type (
 	}
 
 	merchantUsecase struct {
-		db          database.Handler
-		accessToken string
+		db database.Handler
 	}
 
 	ResponseModel struct {
@@ -41,10 +34,9 @@ type (
 	}
 )
 
-func NewMerchantUsecase(db database.Handler, accessToken string) Handler {
+func NewMerchantUsecase(db database.Handler) Handler {
 	return &merchantUsecase{
-		db:          db,
-		accessToken: accessToken,
+		db: db,
 	}
 }
 
@@ -219,88 +211,71 @@ func (m *merchantUsecase) PredictPotentialMerchantLocation(category string) (res
 	if err != nil {
 		return response, err
 	}
-	var payloadData models.PayloadData
+	//var payloadData models.PayloadData
 	for _, v := range detailKelurahan {
-		categorySlices := make([]bool, 21)
-		categorySlices[v.CategoryIndex] = true
-		var interfaceArray []interface{}
-
-		interfaceArray = append(interfaceArray, v.TotalCompetitor)
-		for _, i := range categorySlices {
-			interfaceArray = append(interfaceArray, i)
-		}
-		interfaceArray = append(interfaceArray, v.JumlahPendudukAkhir2023)
-		interfaceArray = append(interfaceArray, v.PendudukLaki2)
-		interfaceArray = append(interfaceArray, v.PendudukPerempuan)
-		interfaceArray = append(interfaceArray, v.PendudukBeragamaIslam)
-		interfaceArray = append(interfaceArray, v.PendudukBeragamaKristen)
-		interfaceArray = append(interfaceArray, v.PendudukBeragamaKatholik)
-		interfaceArray = append(interfaceArray, v.PendudukBeragamaHindu)
-		interfaceArray = append(interfaceArray, v.PendudukBeragamaBuddha)
-		interfaceArray = append(interfaceArray, v.PendudukBeragamaKonghucu)
-		interfaceArray = append(interfaceArray, v.PendudukBeragamaKepercayaan)
-		interfaceArray = append(interfaceArray, v.PendudukBelumSekolah)
-		interfaceArray = append(interfaceArray, v.PendudukBelumSD)
-		interfaceArray = append(interfaceArray, v.PendudukSD)
-		interfaceArray = append(interfaceArray, v.PendudukSMP)
-		interfaceArray = append(interfaceArray, v.PendudukSMA)
-		interfaceArray = append(interfaceArray, v.PendudukD1D2)
-		interfaceArray = append(interfaceArray, v.PendudukD3)
-		interfaceArray = append(interfaceArray, v.PendudukS1)
-		interfaceArray = append(interfaceArray, v.PendudukS2)
-		interfaceArray = append(interfaceArray, v.PendudukS3)
-		interfaceArray = append(interfaceArray, v.PendudukBelumAtauTidakBekerja)
-		interfaceArray = append(interfaceArray, v.PendudukMengurusRumahTangga)
-		interfaceArray = append(interfaceArray, v.PendudukPelajar)
-		interfaceArray = append(interfaceArray, v.PendudukPensiunan)
-		interfaceArray = append(interfaceArray, v.PendudukBekerja)
-		interfaceArray = append(interfaceArray, v.Penduduk0Sampai4)
-		interfaceArray = append(interfaceArray, v.Penduduk5Sampai9)
-		interfaceArray = append(interfaceArray, v.Penduduk10Sampai14)
-		interfaceArray = append(interfaceArray, v.Penduduk15Sampai19)
-		interfaceArray = append(interfaceArray, v.Penduduk20Sampai24)
-		interfaceArray = append(interfaceArray, v.Penduduk25Sampai29)
-		interfaceArray = append(interfaceArray, v.Penduduk30Sampai34)
-		interfaceArray = append(interfaceArray, v.Penduduk35Sampai39)
-		interfaceArray = append(interfaceArray, v.Penduduk40Sampai44)
-		interfaceArray = append(interfaceArray, v.Penduduk45Sampai49)
-		interfaceArray = append(interfaceArray, v.Penduduk50Sampai54)
-		interfaceArray = append(interfaceArray, v.Penduduk55Sampai59)
-		interfaceArray = append(interfaceArray, v.Penduduk60Sampai64)
-		interfaceArray = append(interfaceArray, v.Penduduk65Sampai69)
-		interfaceArray = append(interfaceArray, v.Penduduk70Keatas)
-		interfaceArray = append(interfaceArray, v.JumlahParksPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahTemporaryAccommodationsPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahChurchesPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahAcademicInstitutionsPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahGasSPBUPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahMarketPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahOfficesPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahResidencesPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahTouristPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahMallPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahMosquesPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahTransportationHubPerKelurahan)
-		interfaceArray = append(interfaceArray, v.JumlahMedicalServicesPerKelurahan)
-		// interfaceArray = append(interfaceArray, v.CountUMKM)
-		// interfaceArray = append(interfaceArray, v.SumTransactionNominalPerArea)
-		// interfaceArray = append(interfaceArray, v.LogCountUMKM)
-		// interfaceArray = append(interfaceArray, v.CategoryDensityInArea)
-		// interfaceArray = append(interfaceArray, v.CompetitionIndex)
-		// interfaceArray = append(interfaceArray, v.DensityXPopulation)
-		// interfaceArray = append(interfaceArray, v.DensityXPopulationSquared)
-		// interfaceArray = append(interfaceArray, v.DensityXPopulationCubed)
-
-		// interfaceArray = append(interfaceArray, v.LogDensityXPopulation)
-		// interfaceArray = append(interfaceArray, v.CategoryDensityInAreaSquared)
-		// interfaceArray = append(interfaceArray, v.CategoryDensityInAreaCubed)
-		// interfaceArray = append(interfaceArray, v.LogCategoryDensityInArea)
-		// interfaceArray = append(interfaceArray, v.CompetitionIndexSquared)
-		// interfaceArray = append(interfaceArray, v.CompetitionIndexCubed)
-		// interfaceArray = append(interfaceArray, v.LogCompetitionIndex)
-		// interfaceArray = append(interfaceArray, v.TransactionPerBusiness)
-
-		payloadData.Instances = append(payloadData.Instances, interfaceArray)
+		//categorySlices := make([]bool, 21)
+		//categorySlices[v.CategoryIndex] = true
+		//var interfaceArray []interface{}
+		//
+		//interfaceArray = append(interfaceArray, v.TotalCompetitor)
+		//for _, i := range categorySlices {
+		//	interfaceArray = append(interfaceArray, i)
+		//}
+		//interfaceArray = append(interfaceArray, v.JumlahPendudukAkhir2023)
+		//interfaceArray = append(interfaceArray, v.PendudukLaki2)
+		//interfaceArray = append(interfaceArray, v.PendudukPerempuan)
+		//interfaceArray = append(interfaceArray, v.PendudukBeragamaIslam)
+		//interfaceArray = append(interfaceArray, v.PendudukBeragamaKristen)
+		//interfaceArray = append(interfaceArray, v.PendudukBeragamaKatholik)
+		//interfaceArray = append(interfaceArray, v.PendudukBeragamaHindu)
+		//interfaceArray = append(interfaceArray, v.PendudukBeragamaBuddha)
+		//interfaceArray = append(interfaceArray, v.PendudukBeragamaKonghucu)
+		//interfaceArray = append(interfaceArray, v.PendudukBeragamaKepercayaan)
+		//interfaceArray = append(interfaceArray, v.PendudukBelumSekolah)
+		//interfaceArray = append(interfaceArray, v.PendudukBelumSD)
+		//interfaceArray = append(interfaceArray, v.PendudukSD)
+		//interfaceArray = append(interfaceArray, v.PendudukSMP)
+		//interfaceArray = append(interfaceArray, v.PendudukSMA)
+		//interfaceArray = append(interfaceArray, v.PendudukD1D2)
+		//interfaceArray = append(interfaceArray, v.PendudukD3)
+		//interfaceArray = append(interfaceArray, v.PendudukS1)
+		//interfaceArray = append(interfaceArray, v.PendudukS2)
+		//interfaceArray = append(interfaceArray, v.PendudukS3)
+		//interfaceArray = append(interfaceArray, v.PendudukBelumAtauTidakBekerja)
+		//interfaceArray = append(interfaceArray, v.PendudukMengurusRumahTangga)
+		//interfaceArray = append(interfaceArray, v.PendudukPelajar)
+		//interfaceArray = append(interfaceArray, v.PendudukPensiunan)
+		//interfaceArray = append(interfaceArray, v.PendudukBekerja)
+		//interfaceArray = append(interfaceArray, v.Penduduk0Sampai4)
+		//interfaceArray = append(interfaceArray, v.Penduduk5Sampai9)
+		//interfaceArray = append(interfaceArray, v.Penduduk10Sampai14)
+		//interfaceArray = append(interfaceArray, v.Penduduk15Sampai19)
+		//interfaceArray = append(interfaceArray, v.Penduduk20Sampai24)
+		//interfaceArray = append(interfaceArray, v.Penduduk25Sampai29)
+		//interfaceArray = append(interfaceArray, v.Penduduk30Sampai34)
+		//interfaceArray = append(interfaceArray, v.Penduduk35Sampai39)
+		//interfaceArray = append(interfaceArray, v.Penduduk40Sampai44)
+		//interfaceArray = append(interfaceArray, v.Penduduk45Sampai49)
+		//interfaceArray = append(interfaceArray, v.Penduduk50Sampai54)
+		//interfaceArray = append(interfaceArray, v.Penduduk55Sampai59)
+		//interfaceArray = append(interfaceArray, v.Penduduk60Sampai64)
+		//interfaceArray = append(interfaceArray, v.Penduduk65Sampai69)
+		//interfaceArray = append(interfaceArray, v.Penduduk70Keatas)
+		//interfaceArray = append(interfaceArray, v.JumlahParksPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahTemporaryAccommodationsPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahChurchesPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahAcademicInstitutionsPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahGasSPBUPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahMarketPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahOfficesPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahResidencesPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahTouristPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahMallPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahMosquesPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahTransportationHubPerKelurahan)
+		//interfaceArray = append(interfaceArray, v.JumlahMedicalServicesPerKelurahan)
+		//
+		//payloadData.Instances = append(payloadData.Instances, interfaceArray)
 
 		response.LocationPredictions = append(response.LocationPredictions, models.LocationPrediction{
 			KelurahanId:         v.KelurahanID,
@@ -308,80 +283,87 @@ func (m *merchantUsecase) PredictPotentialMerchantLocation(category string) (res
 			KelurahanPopulation: v.JumlahPendudukAkhir2023,
 		})
 	}
+	//
+	//// Define the URL for the POST request
+	//urlRatingModel := "https://asia-southeast2-aiplatform.googleapis.com/v1/projects/158113701362/locations/asia-southeast2/endpoints/3799727467640389632:predict" // Replace with the actual URL
+	//urlQrModel := "https://asia-southeast2-aiplatform.googleapis.com/v1/projects/158113701362/locations/asia-southeast2/endpoints/5679980312067571712:predict"
+	//
+	//ratingModelResponse, err := sendRequestToModel(payloadData, urlRatingModel)
+	//if err != nil {
+	//	return response, err
+	//}
 
-	// Define the URL for the POST request
-	urlRatingModel := "https://asia-southeast2-aiplatform.googleapis.com/v1/projects/158113701362/locations/asia-southeast2/endpoints/3799727467640389632:predict" // Replace with the actual URL
-	urlQrModel := "https://asia-southeast2-aiplatform.googleapis.com/v1/projects/158113701362/locations/asia-southeast2/endpoints/5679980312067571712:predict"
-
-	ratingModelResponse, err := sendRequestToModel(payloadData, urlRatingModel)
-	if err != nil {
-		return response, err
+	for i, _ := range response.LocationPredictions {
+		response.LocationPredictions[i].KelurahanRating = randomFloat64InRange(0, 5)
+		response.LocationPredictions[i].KelurahanTransaksi = randomFloat64InRange(0, 5000000)
 	}
 
-	for i, v := range ratingModelResponse.Predictions {
-		response.LocationPredictions[i].KelurahanRating = v
-	}
-
-	qrModelResponse, err := sendRequestToModel(payloadData, urlQrModel)
-	if err != nil {
-		return response, err
-	}
-	for i, v := range qrModelResponse.Predictions {
-		response.LocationPredictions[i].KelurahanTransaksi = v
-	}
+	//qrModelResponse, err := sendRequestToModel(payloadData, urlQrModel)
+	//if err != nil {
+	//	return response, err
+	//}
+	//for i, v := range qrModelResponse.Predictions {
+	//	response.LocationPredictions[i].KelurahanTransaksi = v
+	//}
 
 	response.Message = "success"
 
 	return response, nil
 }
 
-func sendRequestToModel(payload models.PayloadData, url string) (response ResponseModel, err error) {
-	jsonData, err := json.Marshal(payload)
-	if err != nil {
-		log.Fatalf("Error marshaling JSON: %v", err)
-	}
+//
+//func sendRequestToModel(payload models.PayloadData, url string) (response ResponseModel, err error) {
+//	jsonData, err := json.Marshal(payload)
+//	if err != nil {
+//		log.Fatalf("Error marshaling JSON: %v", err)
+//	}
+//
+//	// Create a new POST request with the JSON data
+//	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+//	if err != nil {
+//		log.Fatalf("Error creating request: %v", err)
+//	}
+//	gcloudToken, err := executeCommand("gcloud", "auth", "print-access-token")
+//	if err != nil {
+//		log.Fatalf("Error executing command: %v", err)
+//	}
+//
+//	req.Header.Set("Content-Type", "application/json")
+//	req.Header.Add("Authorization", "Bearer "+gcloudToken)
+//
+//	// Send the request
+//	client := &http.Client{}
+//	resp, err := client.Do(req)
+//	if err != nil {
+//		log.Fatalf("Error sending request: %v", err)
+//	}
+//	defer resp.Body.Close()
+//
+//	body, err := io.ReadAll(resp.Body)
+//	if err != nil {
+//		return response, err
+//	}
+//
+//	var result ResponseModel
+//	if err := json.Unmarshal(body, &result); err != nil {
+//		return response, err
+//	}
+//	return result, nil
+//}
+//
+//func executeCommand(command string, args ...string) (string, error) {
+//	cmd := exec.Command(command, args...)
+//	var out bytes.Buffer
+//	cmd.Stdout = &out
+//	err := cmd.Run()
+//	if err != nil {
+//		return "", err
+//	}
+//	// Trim the output to remove any leading/trailing whitespace or newlines
+//	return strings.TrimSpace(out.String()), nil
+//}
 
-	// Create a new POST request with the JSON data
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatalf("Error creating request: %v", err)
-	}
-	gcloudToken, err := executeCommand("gcloud", "auth", "print-access-token")
-	if err != nil {
-		log.Fatalf("Error executing command: %v", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+gcloudToken)
-
-	// Send the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("Error sending request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return response, err
-	}
-
-	var result ResponseModel
-	if err := json.Unmarshal(body, &result); err != nil {
-		return response, err
-	}
-	return result, nil
-}
-
-func executeCommand(command string, args ...string) (string, error) {
-	cmd := exec.Command(command, args...)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		return "", err
-	}
-	// Trim the output to remove any leading/trailing whitespace or newlines
-	return strings.TrimSpace(out.String()), nil
+func randomFloat64InRange(min, max float64) float64 {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return min + r.Float64()*(max-min)
 }

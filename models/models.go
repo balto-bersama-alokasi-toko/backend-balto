@@ -6,9 +6,9 @@ type (
 	}
 
 	Configuration struct {
-		Db          DbConfig     `json:"db"`
-		Server      ServerConfig `json:"server"`
-		AccessToken string       `json:"accessToken"`
+		Db       DbConfig     `json:"db"`
+		Server   ServerConfig `json:"server"`
+		Dbsecret string       `json:"dbsecret"`
 	}
 
 	ServerConfig struct {

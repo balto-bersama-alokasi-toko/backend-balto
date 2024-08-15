@@ -4,6 +4,7 @@ import (
 	"backend-balto/utils"
 	"context"
 	"database/sql"
+	"fmt"
 	"slices"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,8 +13,9 @@ import (
 
 type (
 	DbRepository struct {
-		db  *pgxpool.Pool
-		ctx context.Context
+		db       *pgxpool.Pool
+		dbsecret string
+		ctx      context.Context
 	}
 
 	Handler interface {
@@ -28,11 +30,12 @@ type (
 	}
 )
 
-func NewDbRepository(db *pgxpool.Pool) Handler {
+func NewDbRepository(db *pgxpool.Pool, dbsecret string) Handler {
 	dbContext := context.Background()
 	return &DbRepository{
-		db:  db,
-		ctx: dbContext,
+		db:       db,
+		dbsecret: dbsecret,
+		ctx:      dbContext,
 	}
 }
 
@@ -151,7 +154,8 @@ func (r *DbRepository) GetKelurahanPublicPlaces(category string) (result []Kelur
 }
 
 func (r *DbRepository) GetTopMerchantsByKelurahan(kelurahanId int) (result []TopMerchantDb, err error) {
-	rows, err := r.db.Query(r.ctx, getTopMerchantKelurahan, kelurahanId)
+	modifiedQuery := fmt.Sprintf(getTopMerchantKelurahan, r.dbsecret)
+	rows, err := r.db.Query(r.ctx, modifiedQuery, kelurahanId)
 	if err != nil {
 		return result, err
 	}
