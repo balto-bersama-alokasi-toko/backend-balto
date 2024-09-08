@@ -22,3 +22,4 @@ backend-balto
 # Go workspace file
 go.work
 go.work.sum
+.idea
